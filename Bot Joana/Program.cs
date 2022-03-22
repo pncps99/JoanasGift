@@ -21,7 +21,7 @@ namespace Bot
 
     class Program
     {
-        private static void Login(ChromeDriver driver, int timeout = 0)
+        private static void Login(ChromeDriver driver, string[] data, int timeout = 0)
         {
             driver.Navigate().GoToUrl("https://www.zara.com/pt/pt/logon");
 
@@ -30,9 +30,9 @@ namespace Bot
 
             Waits.HoldUntil(driver, id: "onetrust-accept-btn-handler").Click();
 
-            Waits.HoldUntil(driver, name: "logonId").SendKeys("esrpi11@gmail.com");
+            Waits.HoldUntil(driver, name: "logonId").SendKeys(data[0]);
 
-            Waits.HoldUntil(driver, name: "password").SendKeys("Teste123");
+            Waits.HoldUntil(driver, name: "password").SendKeys(data[1]);
 
             Waits.HoldUntil(driver, xpath: "//*[@id=\"main\"]/article/div/div[2]/div[1]/section/form/div[2]/button").Submit();
         }
@@ -60,7 +60,7 @@ namespace Bot
             Waits.HoldUntil(driver, xpath: "//*[@id=\"main\"]/article/div[2]/div[2]/form/div[1]/div[3]/div/div/div[1]/input").SendKeys(cvv2);
         }
 
-        private static void Checkout(ChromeDriver driver, int timeout = 0)
+        private static void Checkout(ChromeDriver driver, string[] data, int timeout = 0)
         {
             driver.Navigate().GoToUrl("https://www.zara.com/pt/pt/shop/cart");
 
@@ -90,7 +90,7 @@ namespace Bot
             // proceeds
             Waits.HoldUntil(driver, xpath: "//*[@id=\"main\"]/article/div[2]/div[2]/div/section/div[2]/div[2]/div[2]/button").Click();
 
-            FillCardInfo(driver, "5309 7700 3191 7482", "3", "2022", "Pedro", "983");
+            FillCardInfo(driver, data[2], data[3], data[4], data[5], data[6]);
 
             if (timeout > 0)
                 Thread.Sleep(timeout);
@@ -110,6 +110,17 @@ namespace Bot
 
         static void Main(string[] args)
         {
+            string[] data = System.IO.File.ReadAllLines("./info.txt");
+            /*
+             0 -> email
+             1 -> password
+             2 -> card number
+             3 -> card expiration month
+             4 -> card expiration year
+             5 -> card name
+             6 -> card cvv2
+             */
+
             new DriverManager().SetUpDriver(new ChromeConfig());
 
             var options = new ChromeOptions();
@@ -124,11 +135,11 @@ namespace Bot
             driver.Manage().Window.Maximize();
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(5);
 
-            Login(driver, 2000);
+            Login(driver, data, 2000);
 
             Thread.Sleep(2000);
 
-            Checkout(driver, 1000);
+            Checkout(driver, data, 1000);
 
             driver.Quit();
         }
